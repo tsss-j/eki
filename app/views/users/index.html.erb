@@ -1,0 +1,86 @@
+<head>
+<style type="text/css">
+	li {
+		display: block;
+	}
+</style>  
+</head>
+<h1>From Near Station</h1>
+<p>
+Destination：<input id="destination" type="text" name="destination" size="10">
+<input type="submit" value="search" onclick="search()">
+</p><br>
+<ul id="list">
+</ul>
+
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript">
+	var url;
+	var near = [];
+	if (navigator.geolocation) {
+        // 現在の位置情報取得を実施
+        navigator.geolocation.getCurrentPosition(
+        // 位置情報取得成功時
+        function (pos) { 
+        	var latitude = pos.coords.latitude;
+        	var longitude = pos.coords.longitude;
+        	latitude = 35.707055;
+        	longitude = 139.78194;
+        	console.log("latitude = " + latitude);
+        	console.log("longitude = " + longitude);
+        	url="http://map.simpleapi.net/stationapi?x=" + longitude + "&y=" + latitude + "&output=json";
+        	console.log(url);
+        	$.ajax({
+        		url: url,
+        		type:'GET',
+        		dataType: 'jsonp',
+        		timeout:10000,
+        		success: function(data) {
+        			if(data.length>5){
+        				for(i=0; i<5; i++){
+        					near.push(data[i]);
+        				}
+        			}else{
+        				for(i=0; i<data.length; i++){
+        					near.push(data[i]);
+        				}
+        			}
+        			console.log(near);
+        		}
+        	});
+        },
+        // 位置情報取得失敗時
+        function (pos) {
+        	var location ="<li>位置情報が取得できませんでした。</li>";
+        	document.getElementById("location").innerHTML = location;
+        });
+    } else {
+    	window.alert("本ブラウザではGeolocationが使えません");
+    }
+
+
+    function search(){
+    	var d = new Date();
+    	var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var day = d.getDate();
+		var hour = d.getHours();
+		var minute = d.getMinutes()+"";
+		var second = d.getSeconds();
+		var destination = $("#destination").val();
+		if(month<10){
+			month = "0"+month;
+		}
+		if(day<10){
+			day = "0"+day;
+		}
+    	for(i=0; i<near.length; i++){
+    		var arr = near[i]['name'];
+    		var time = near[i]['traveltime'];
+    		u = "http://roote.ekispert.net/result?dep="+arr+"&arr="+destination+"&via1=&via2=&yyyymm="+year+month+"&day="+day+"&hour="+hour+"&minute10="+minute[0]+"&minute1="+minute[1]+"&type=dep&sort=time&transfer=2&surcharge=3&shinkansen=true&express=true&local=true&highway=false&plane=false&connect=false&liner=false&sleep=false&ship=false";
+    		$("ul").append("<li><a href="+u+"><span>From: "+arr+" To: "+destination+"</span>( "+time+" )</li>");
+    	}
+    }
+
+</script>
